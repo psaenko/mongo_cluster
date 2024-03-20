@@ -1,0 +1,4 @@
+FROM mongo
+
+RUN echo "replication:" >> /etc/mongod.conf \
+    && echo "  replSetName: rs0" >> /etc/mongod.conf

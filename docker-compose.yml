@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  primary_mongo:
+    build:
+      context: .
+      dockerfile: Dockerfile_mongo
+    container_name: ${PRIMARY_CONTAINER_NAME}
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+    ports:
+      - "${PRIMARY_IP}:${MONGO_PRIMARY_PORT}:27017"
+    restart: always
+    command: ["./initiate_replica_set.sh"]  # Запуск скрипта после запуска контейнера
+    depends_on:
+      - secondary_mongo
+    condition: service_healthy
+
+  secondary_mongo:
+    build:
+      context: .
+      dockerfile: Dockerfile_mongo
+    container_name: ${SECONDARY_CONTAINER_NAME}
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+    ports:
+      - "${SECONDARY_IP}:${MONGO_SECONDARY_PORT}:27017"
+    restart: always
+    condition: service_healthy
