@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.3'
 
 services:
   primary_mongo:
@@ -13,9 +13,6 @@ services:
       - "${PRIMARY_IP}:${MONGO_PRIMARY_PORT}:27017"
     restart: always
     command: ["./initiate_replica_set.sh"]  # Запуск скрипта после запуска контейнера
-    depends_on:
-      - secondary_mongo
-    condition: service_healthy
 
   secondary_mongo:
     build:
@@ -28,4 +25,6 @@ services:
     ports:
       - "${SECONDARY_IP}:${MONGO_SECONDARY_PORT}:27017"
     restart: always
-    condition: service_healthy
+    depends_on:
+      - primary_mongo
+    command: ["./wait-for-it.sh", "${PRIMARY_CONTAINER_NAME}:${MONGO_PRIMARY_PORT}", "--", "docker-entrypoint.sh", "mongod", "--replSet", "rs0"]
